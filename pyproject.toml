@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anna-dl"
+version = "1.0.0"
+description = "Lightweight, resilient Shadow Library downloader CLI & AI Agent (Anna's Archive & LibGen) with zero paid API keys."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Open Source Contributors"}
+]
+keywords = [
+    "anna-archive",
+    "libgen",
+    "shadow-library",
+    "ebook-downloader",
+    "agentic-ai",
+    "cli"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Utilities",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search"
+]
+dependencies = [
+    "requests>=2.28.0",
+    "beautifulsoup4>=4.11.0",
+    "urllib3>=1.26.0"
+]
+
+[project.scripts]
+anna-dl = "anna_dl.cli:main"
+bookdl = "anna_dl.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["anna_dl*"]
