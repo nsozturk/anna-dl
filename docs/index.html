@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>anna-dl — Resilient, Zero-Key Shadow Library Downloader CLI & AI Agent</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Official documentation for anna-dl: Ultra-resilient, zero-key Shadow Library downloader CLI & AI agent engine for Anna's Archive and LibGen. Features 10-candidate MD5 recovery loop, automated DDoS-Guard bypass, and pure Python architecture.">
+  <meta name="keywords" content="anna-dl, annas archive, libgen, library genesis, shadow library, book downloader, ebook downloader, python cli, agentic ai, claude code, open access, academic research">
+  <meta name="author" content="Enes Öztürk (@ns0bj)">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://nsozturk.github.io/anna-dl/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nsozturk.github.io/anna-dl/">
+  <meta property="og:title" content="anna-dl — Zero-Key Shadow Library Downloader CLI & AI Agent">
+  <meta property="og:description" content="Instant search, multi-mirror recovery, and high-speed streaming for Anna's Archive & LibGen. 100% free, zero paid API keys required.">
+  <meta property="og:image" content="https://raw.githubusercontent.com/nsozturk/anna-dl/main/assets/banner.png">
+  <meta property="og:site_name" content="anna-dl Documentation">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://nsozturk.github.io/anna-dl/">
+  <meta name="twitter:title" content="anna-dl — Zero-Key Shadow Library Downloader CLI & AI Agent">
+  <meta name="twitter:description" content="Resilient CLI & AI Agent engine for Anna's Archive & LibGen. Zero paid API keys, pure Python.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/nsozturk/anna-dl/main/assets/banner.png">
+  <meta name="twitter:creator" content="@ns0bj">
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "anna-dl",
+    "operatingSystem": "macOS, Linux, Windows",
+    "applicationCategory": "DeveloperApplication",
+    "description": "Resilient, zero-key Shadow Library downloader CLI & AI agent engine for Anna's Archive and Library Genesis.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Enes Öztürk",
+      "url": "https://github.com/nsozturk"
+    }
+  }
+  </script>
+
+  <!-- Typography & Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #0f172a;
+      --sidebar-bg: #0b1120;
+      --border: #1e293b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #8b5cf6;
+      --accent-glow: rgba(139, 92, 246, 0.15);
+      --success: #10b981;
+      --code-bg: #030712;
+      --sidebar-width: 280px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Top Navigation Bar */
+    header.navbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: 64px;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: #fff;
+      text-decoration: none;
+    }
+    .brand span.badge {
+      background: var(--accent-glow);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: color 0.15s;
+    }
+    .nav-link:hover { color: #fff; }
+    .btn-github {
+      background: #1e293b;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #334155;
+      transition: all 0.15s;
+    }
+    .btn-github:hover { background: #334155; }
+
+    /* Layout */
+    .container {
+      display: flex;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    /* Sidebar Navigation */
+    aside.sidebar {
+      width: var(--sidebar-width);
+      position: sticky;
+      top: 64px;
+      height: calc(100vh - 64px);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      overflow-y: auto;
+    }
+    .search-box {
+      margin-bottom: 20px;
+    }
+    .search-box input {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .search-box input:focus { border-color: var(--accent); }
+    .nav-section { margin-bottom: 24px; }
+    .nav-section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 700;
+      padding-left: 8px;
+    }
+    .nav-menu-item {
+      display: block;
+      padding: 7px 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 6px;
+      margin-bottom: 2px;
+      transition: all 0.15s;
+    }
+    .nav-menu-item:hover, .nav-menu-item.active {
+      color: #fff;
+      background: rgba(139, 92, 246, 0.12);
+      border-left: 3px solid var(--accent);
+    }
+
+    /* Main Content */
+    main.content {
+      flex: 1;
+      padding: 40px 60px;
+      max-width: 920px;
+    }
+    .banner-hero {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 32px;
+      overflow: hidden;
+      display: block;
+    }
+    .banner-hero img { width: 100%; height: auto; display: block; }
+
+    h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.02em; }
+    h2 { font-size: 1.75rem; font-weight: 700; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 1.25rem; font-weight: 600; margin: 24px 0 12px; }
+    p { margin-bottom: 16px; color: #cbd5e1; }
+    
+    /* Code Blocks */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 16px 0 24px;
+      position: relative;
+    }
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+    }
+    p code, li code {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #1e293b;
+      color: var(--text-muted);
+      border: 1px solid #334155;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover { color: #fff; background: #334155; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0 30px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    th {
+      background: #0f172a;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Cards */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .feature-card h4 { font-size: 1.05rem; margin-bottom: 8px; color: #fff; }
+    .feature-card p { font-size: 0.88rem; margin: 0; color: var(--text-muted); }
+
+    /* Footer */
+    footer {
+      margin-top: 80px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      aside.sidebar { display: none; }
+      main.content { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar">
+    <a href="#" class="brand">
+      📚 anna-dl
+      <span class="badge">v1.0.0</span>
+    </a>
+    <div class="nav-actions">
+      <a href="#quick-start" class="nav-link">Quick Start</a>
+      <a href="#cli-usage" class="nav-link">CLI Commands</a>
+      <a href="#ai-agents" class="nav-link">AI Agents</a>
+      <a href="https://github.com/nsozturk/anna-dl" target="_blank" rel="noopener" class="btn-github">
+        <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="search-box">
+        <input type="text" id="docSearch" placeholder="Search documentation..." onkeyup="filterDocs()">
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Getting Started</div>
+        <a href="#overview" class="nav-menu-item active">Overview</a>
+        <a href="#highlights" class="nav-menu-item">Key Features</a>
+        <a href="#installation" class="nav-menu-item">Installation</a>
+        <a href="#quick-start" class="nav-menu-item">Quick Start</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">CLI Documentation</div>
+        <a href="#cli-usage" class="nav-menu-item">Command Reference</a>
+        <a href="#batch-download" class="nav-menu-item">Batch &amp; Parallel Downloads</a>
+        <a href="#dns-bypass" class="nav-menu-item">DNS Bypass &amp; ISP Blocks</a>
+        <a href="#mirrors" class="nav-menu-item">2026 Mirror Network</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">AI Agents &amp; Automation</div>
+        <a href="#ai-agents" class="nav-menu-item">Claude Code &amp; Agents</a>
+        <a href="#agents-md" class="nav-menu-item">AGENTS.md Contract</a>
+        <a href="#global-rule" class="nav-menu-item">Global Agent Rule</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Architecture</div>
+        <a href="#ddos-guard" class="nav-menu-item">DDoS-Guard Solver</a>
+        <a href="#md5-loop" class="nav-menu-item">10-Candidate MD5 Loop</a>
+        <a href="#license" class="nav-menu-item">License &amp; Disclaimer</a>
+      </div>
+    </aside>
+
+    <!-- Content Area -->
+    <main class="content">
+      <div class="banner-hero">
+        <img src="assets/banner.png" onerror="this.src='../assets/banner.png'" alt="anna-dl Banner">
+      </div>
+
+      <section id="overview">
+        <h1>anna-dl Documentation</h1>
+        <p><strong>anna-dl</strong> is an ultra-resilient, autonomous command-line tool and AI agent engine designed to discover, resolve, and stream academic literature and non-fiction books from <strong>Anna's Archive</strong> and <strong>Library Genesis (LibGen)</strong> with <strong>100% free access and zero paid API keys</strong>.</p>
+      </section>
+
+      <section id="highlights">
+        <h2>Key Highlights</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h4>🔓 Zero Paid Keys</h4>
+            <p>Operates freely over public mirrors without requiring donation tokens or membership accounts.</p>
+          </div>
+          <div class="feature-card">
+            <h4>⚡ Pure Python Core</h4>
+            <p>Ultra-lightweight (<150 KB). Starts instantly in milliseconds with requests and regex.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🛡️ DDoS-Guard Solver</h4>
+            <p>Automatic headless Chromium fallback resolving <code>&amp;check=1</code> JavaScript challenges seamlessly.</p>
+          </div>
+          <div class="feature-card">
+            <h4>🔄 10-MD5 Recovery Loop</h4>
+            <p>Sequentially probes up to 10 candidate hashes until an active direct download stream succeeds.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="installation">
+        <h2>Installation</h2>
+        <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code># Clone repository
+git clone https://github.com/nsozturk/anna-dl.git
+cd anna-dl
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install CLI globally
+pip install -e .</code></pre>
+      </section>
+
+      <section id="quick-start">
+        <h2>Quick Start</h2>
+        <p>Download any book directly to your current working directory without needing a queue:</p>
+        <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code># Download by Title and Author
+anna-dl get --title "Atomic Habits" --author "James Clear"
+
+# Download with custom query
+anna-dl get --title "Thinking, Fast and Slow" --query "Kahneman Thinking Fast"
+
+# Bypass regional DNS blocks
+anna-dl get --title "Deep Work" --author "Cal Newport" --bypass-dns</code></pre>
+      </section>
+
+      <section id="cli-usage">
+        <h2>CLI Command Reference</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Flag / Argument</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>get</code></td>
+              <td><code>--title</code>, <code>--author</code></td>
+              <td>Searches and downloads a single book on the fly.</td>
+            </tr>
+            <tr>
+              <td><code>download</code></td>
+              <td><code>--parallel</code>, <code>--workers 4</code></td>
+              <td>Processes entire <code>books_queue.json</code> in batches.</td>
+            </tr>
+            <tr>
+              <td><code>retry</code></td>
+              <td><code>--bypass-dns</code></td>
+              <td>Re-attempts only pending or failed items from the log.</td>
+            </tr>
+            <tr>
+              <td><code>extract</code></td>
+              <td><code>--docs-dir &lt;path&gt;</code></td>
+              <td>Extracts book lists from markdown tables into a queue JSON.</td>
+            </tr>
+            <tr>
+              <td><code>sync</code></td>
+              <td><code>--output-dir &lt;path&gt;</code></td>
+              <td>Reconciles files on disk with <code>download_log.json</code>.</td>
+            </tr>
+            <tr>
+              <td><code>status</code></td>
+              <td>None</td>
+              <td>Prints overall download statistics and completion ratios.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="ai-agents">
+        <h2>AI Agent Integration</h2>
+        <p><code>anna-dl</code> was built specifically for autonomous AI agents like <strong>Claude Code</strong>, <strong>Cursor</strong>, <strong>Antigravity</strong>, and <strong>Gemini CLI</strong>.</p>
+        <p>Copy the following snippet into your global rules file (<code>~/.claude/agents/anna-dl.md</code> or <code>~/.config/agent-rules/anna-dl.md</code>):</p>
+        <pre><button class="copy-btn" onclick="copyCode(this)">Copy</button><code>## Book & Literature Retrieval Tool (`anna-dl`)
+
+When asked to find, retrieve, download, or read academic books or textbooks:
+1. Run: `anna-dl get --title "&lt;Title&gt;" --author "&lt;Author&gt;"`
+2. If connection times out or host is blocked, append `--bypass-dns`.
+3. Output files are verified and saved into `./downloads/`.</code></pre>
+      </section>
+
+      <section id="ddos-guard">
+        <h2>DDoS-Guard JS Challenge Evasion</h2>
+        <p>In mid-2026, official Anna's Archive endpoints deployed aggressive DDoS-Guard challenges resulting in <code>HTTP 403 Forbidden</code> for plain HTTP scrapers. <code>anna-dl</code> handles this via a dual-path architecture:</p>
+        <ul>
+          <li><strong>Fast Path:</strong> Queries <code>libgen.li</code> directly over HTTP for instant response.</li>
+          <li><strong>Stealth Browser Path:</strong> If Anna's Archive returns 403, <code>anna-dl</code> triggers headless Chromium with <code>--disable-blink-features=AutomationControlled</code> and deletes <code>navigator.webdriver</code>, waiting for the <code>&amp;check=1</code> redirect to finish.</li>
+        </ul>
+      </section>
+
+      <section id="license">
+        <h2>License &amp; Ethics</h2>
+        <p>Distributed under the <strong>MIT License</strong>. <code>anna-dl</code> is intended for researchers, archivists, and educators accessing public-domain and open-access literature.</p>
+      </section>
+
+      <footer>
+        <p>Developed with ❤️ by <a href="https://github.com/nsozturk" style="color:var(--accent);">Enes Öztürk (@ns0bj)</a>. Hosted on GitHub Pages.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    function copyCode(btn) {
+      const code = btn.nextElementSibling.innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.innerText = 'Copied!';
+        setTimeout(() => btn.innerText = 'Copy', 2000);
+      });
+    }
+
+    function filterDocs() {
+      const query = document.getElementById('docSearch').value.toLowerCase();
+      const sections = document.querySelectorAll('main.content section');
+      sections.forEach(sec => {
+        const text = sec.innerText.toLowerCase();
+        sec.style.display = text.includes(query) ? 'block' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
