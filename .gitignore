@@ -27,7 +27,7 @@ ENV/
 
 # IDE & OS files
 .DS_Store
-.vscode/
-.idea/
-*.swp
-*.swo
+# Node & Astro Starlight
+node_modules/
+.astro/
+dist/
