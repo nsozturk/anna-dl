@@ -54,3 +54,17 @@ This document defines the operational contracts, execution commands, and failure
 - The tool is designed to run headlessly in subagent and CI/CD pipelines.
 - Standard return code `0` signals successful file retrieval.
 - Return code `1` signals failure across all candidate mirrors, prompting query refinement.
+
+---
+
+## 4. Public GitHub Synchronisation Reflection Gate
+
+This repository is published open-source to GitHub under `nsozturk/anna-dl`.
+
+**Maintenance & Feature Propagation Mandate:**
+Whenever an improvement, bug fix, mirror update, or DDoS evasion technique is authored in the private workspace or tested locally:
+1. **Self-Query**: The agent must ask itself: *"Does this improvement belong in the public open-source `anna-dl` repository?"*
+2. **User Consultation**: If yes, ask the user:
+   > *"Bu değişikliği GitHub'daki açık kaynak `anna-dl` reposuna da aktarıp güncelleyelim mi?"*
+3. **Audit Before Push**: Ensure zero local paths (`/Users/...`), personal emails, or private test logs are committed. Always ask user confirmation before running `git push`.
+
