@@ -1,12 +1,12 @@
-<div align="center">
-  <img src="header.jpg" alt="anna-dl Header Banner" width="100%">
-</div>
+<p align="center">
+  <img src="assets/banner.png" alt="anna-dl — Zero-Key Shadow Library Downloader CLI & AI Agent" width="100%">
+</p>
 
 <p align="center">
   <a href="https://pypi.org/project/anna-dl/"><img src="https://img.shields.io/badge/PyPI-v1.0.0-blue?logo=pypi&logoColor=white&style=for-the-badge" alt="PyPI Version"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white&style=for-the-badge" alt="Python Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-F5A623?style=for-the-badge" alt="License: MIT"></a>
-  <a href="https://github.com/your-username/anna-dl/releases"><img src="https://img.shields.io/badge/Release-v1.0.0%20Stable-10B981?logo=github&logoColor=white&style=for-the-badge" alt="Release"></a>
+  <a href="https://github.com/nsozturk/anna-dl/releases"><img src="https://img.shields.io/badge/Release-v1.0.0%20Stable-10B981?logo=github&logoColor=white&style=for-the-badge" alt="Release"></a>
   <img src="https://img.shields.io/badge/API%20Keys-None%20Required-success?style=for-the-badge" alt="Zero API Keys Required">
   <img src="https://img.shields.io/badge/AI%20Agent-Native%20Ready-7C3AED?logo=openai&logoColor=white&style=for-the-badge" alt="AI Agent Ready">
   <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-gray?style=for-the-badge" alt="Platform Support">

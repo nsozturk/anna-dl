@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" font-family="'Helvetica Neue',Arial,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f19"/>
+      <stop offset="0.5" stop-color="#141126"/>
+      <stop offset="1" stop-color="#090d14"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a855f7"/>
+      <stop offset="1" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c3aed" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="term-border" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b2d54"/>
+      <stop offset="1" stop-color="#1e1b2e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="360" fill="url(#bg)"/>
+  <circle cx="1080" cy="80" r="380" fill="url(#glow)"/>
+  <circle cx="120" cy="300" r="240" fill="url(#glow)" opacity="0.4"/>
+
+  <!-- Left: Wordmark & Tagline -->
+  <g transform="translate(80, 0)">
+    <!-- Book Icon SVG -->
+    <g transform="translate(0, 75)">
+      <path d="M0,8 C8,2 24,0 36,6 C48,12 50,22 50,44 C38,38 24,36 12,38 C4,39 0,44 0,44 Z" fill="#8b5cf6" opacity="0.9"/>
+      <path d="M54,44 C54,22 56,12 68,6 C80,0 96,2 104,8 L104,44 C104,44 100,39 92,38 C80,36 66,38 54,44 Z" fill="#ec4899" opacity="0.9"/>
+    </g>
+
+    <text x="70" y="112" fill="#ffffff" font-size="70" font-weight="800" letter-spacing="-2">anna-dl</text>
+    <text x="4" y="166" fill="#9ca3af" font-size="24" font-weight="500">Zero-key Shadow Library downloader &amp; agent — <tspan fill="#10b981" font-weight="700">100% free</tspan>.</text>
+
+    <!-- Command Chip -->
+    <g transform="translate(4, 196)">
+      <rect width="210" height="44" rx="8" fill="#131622" stroke="#2d3348"/>
+      <text x="18" y="29" fill="url(#accent)" font-size="20" font-weight="700" font-family="'SF Mono',Menlo,monospace">anna-dl get</text>
+      <circle cx="155" cy="22" r="4" fill="#10b981"/>
+      <text x="168" y="28" fill="#9ca3af" font-size="14" font-family="'SF Mono',Menlo,monospace">CLI</text>
+    </g>
+
+    <text x="4" y="278" fill="#6b7280" font-size="16">Anna's Archive · LibGen · 10-MD5 Recovery Loop · DDoS-Guard Solver</text>
+    <text x="4" y="304" fill="#4b5563" font-size="14" font-family="'SF Mono',Menlo,monospace">Built for human CLI power &amp; autonomous Claude Code / LLM Agents</text>
+  </g>
+
+  <!-- Right: Sleek Terminal Card -->
+  <g transform="translate(760, 76)">
+    <rect width="440" height="208" rx="12" fill="#090c13" stroke="url(#term-border)" stroke-width="1.5"/>
+    
+    <!-- Window controls -->
+    <circle cx="24" cy="24" r="5.5" fill="#ff5f56"/>
+    <circle cx="44" cy="24" r="5.5" fill="#ffbd2e"/>
+    <circle cx="64" cy="24" r="5.5" fill="#27c93f"/>
+    <text x="220" y="28" fill="#4b5563" font-size="12" text-anchor="middle" font-family="'SF Mono',Menlo,monospace">terminal — bash</text>
+
+    <!-- Terminal Output -->
+    <text x="24" y="68" font-family="'SF Mono',Menlo,monospace" font-size="15" fill="#e5e7eb"><tspan fill="#a855f7">$</tspan> anna-dl get --title "Deep Work"</text>
+    <text x="24" y="98" font-family="'SF Mono',Menlo,monospace" font-size="14" fill="#9ca3af">🔍 Probing mirrors &amp; 10 candidate MD5 hashes...</text>
+    <text x="24" y="126" font-family="'SF Mono',Menlo,monospace" font-size="14" fill="#818cf8">🛡️ DDoS-Guard challenge solved (&amp;check=1)</text>
+    <text x="24" y="154" font-family="'SF Mono',Menlo,monospace" font-size="14" fill="#9ca3af">⚡ Token link extracted: ads.php → get.php</text>
+    <text x="24" y="184" font-family="'SF Mono',Menlo,monospace" font-size="14" fill="#10b981">✔ SUCCESS (14.2 MB) → Deep Work - Newport.pdf</text>
+  </g>
+</svg>
