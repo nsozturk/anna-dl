@@ -96,13 +96,14 @@ def download_book(
     author = book.get('author', 'Unknown')
     group = book.get('category_group', book.get('category', ''))
     subcat = book.get('subcategory', '')
+    prefer_format = book.get('prefer_format', 'pdf')
 
     queries = build_queries(title, author, book.get('search_query', ''))
-    print(f"\n🔍 Searching for: {title} ({author})")
+    print(f"\n🔍 Searching for: {title} ({author}) [preference: {prefer_format.upper()}]")
 
     for query in queries:
         print(f"  ↳ Trying query: '{query}'")
-        md5_candidates = search_md5_candidates(query, anna_mirror)
+        md5_candidates = search_md5_candidates(query, anna_mirror, prefer_format=prefer_format)
         if md5_candidates:
             print(f"    [+] Found {len(md5_candidates)} MD5 candidate(s). Resolving download mirrors...")
             for idx, md5 in enumerate(md5_candidates, 1):

@@ -28,6 +28,7 @@ def main():
     parser.add_argument('--log-file', type=Path, default=Path(config.DEFAULT_LOG_FILE), help="Path to download_log.json")
     parser.add_argument('--bypass-dns', action='store_true', help="Bypass DNS blocks for shadow library domains via direct edge IP")
 
+    parser.add_argument('--format', choices=['pdf', 'epub'], default='pdf', help="Preferred file format (default: pdf)")
     parser.add_argument('--limit', type=int, default=0, help="Limit number of books to download in batch (0 = all)")
     parser.add_argument('--categories', type=str, default='', help="Comma-separated category prefixes to filter by")
     parser.add_argument('--parallel', action='store_true', help="Enable multi-worker parallel downloading")
@@ -52,7 +53,8 @@ def main():
             book_dict = {
                 'title': args.title,
                 'author': args.author,
-                'search_query': args.query
+                'search_query': args.query,
+                'prefer_format': args.format
             }
             log_data = load_json(args.log_file, default={})
             ok = download_book(book_dict, anna_mirror, args.output_dir, log_data, args.log_file)
@@ -72,6 +74,10 @@ def main():
                 print(f"[!] Queue file {args.queue_file} is empty or not found.")
                 print("Tip: Use `anna-dl get --title '...'` for single books or `anna-dl extract --docs-dir ...` to create a queue.")
                 sys.exit(1)
+
+            for b in queue:
+                if 'prefer_format' not in b:
+                    b['prefer_format'] = args.format
 
             if args.command == 'retry':
                 log_data = load_json(args.log_file, default={})

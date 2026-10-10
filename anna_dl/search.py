@@ -73,10 +73,11 @@ def _search_anna_playwright_stealth(query: str, anna_mirror: str) -> List[str]:
 
     return md5_list
 
-def search_md5_candidates(query: str, anna_mirror: str, max_candidates: int = 15) -> List[str]:
+def search_md5_candidates(query: str, anna_mirror: str, max_candidates: int = 15, prefer_format: str = 'pdf') -> List[str]:
     """
     Searches for MD5 hashes across LibGen search mirrors and Anna's Archive with smart ranking.
     Employs fast requests with automatic stealth browser fallback for DDoS-Guard challenges.
+    Default format preference: PDF (highest quality/complete scans), with optional EPUB prioritization.
     """
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'}
     candidates = []
@@ -121,17 +122,28 @@ def search_md5_candidates(query: str, anna_mirror: str, max_candidates: int = 15
                             size_kb = float(re.sub(r'[^0-9.]', '', size_str) or 0)
 
                         is_flyer = (ext == 'pdf' and size_kb < 150 and pages in ('1', '2', '3', '4'))
-                        # Rank: EPUB/KEPUB (-100) > MOBI/AZW3 (-50) > PDF (0) > Flyers (200)
                         if is_flyer:
                             score = 200
-                        elif ext in ('epub', 'kepub'):
-                            score = -100
-                        elif ext in ('mobi', 'azw3'):
-                            score = -50
-                        elif ext == 'pdf':
-                            score = 0
+                        elif prefer_format == 'epub':
+                            # EPUB-first ranking
+                            if ext in ('epub', 'kepub'):
+                                score = -100
+                            elif ext in ('mobi', 'azw3'):
+                                score = -50
+                            elif ext == 'pdf':
+                                score = 0
+                            else:
+                                score = 50
                         else:
-                            score = 50
+                            # PDF-first ranking (default)
+                            if ext == 'pdf':
+                                score = -100
+                            elif ext in ('epub', 'kepub'):
+                                score = -50
+                            elif ext in ('mobi', 'azw3'):
+                                score = -30
+                            else:
+                                score = 50
                         candidates.append((score, -size_kb, md5))
 
                 if candidates:
