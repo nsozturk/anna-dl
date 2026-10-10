@@ -32,6 +32,7 @@
 * ⚡ **Direct Dynamic Token Extraction (`ads.php` → `get.php`)**: Extracts ephemeral download tokens on the fly for high-speed streaming.
 * 🔍 **Smart Title Sanitizer**: Automatically cleans editions (`(2nd ed.)`), annotations, and subtitles, creating progressive 4-tier fallback queries.
 * 🌐 **Built-in DNS Bypass**: Monkey-patches socket resolution directly to edge IP (`104.21.34.70`) to circumvent regional ISP blocks.
+* 📖 **Dual Format Engine (PDF Default + Opt-in EPUB)**: Prioritizes full-fidelity complete PDF editions by default while demoting incomplete pamphlets/flyers (< 150 KB). Includes native `--format epub` support for e-readers (Kobo, Kindle) with automatic magic-byte format validation.
 * 🤖 **First-Class AI Agent Interoperability**: Built from the ground up with explicit [AGENTS.md](AGENTS.md) contracts and exit codes for Claude Code, Gemini CLI, Cursor, Antigravity, OpenCode, and Codex.
 
 ---
@@ -60,7 +61,7 @@ flowchart TD
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/anna-dl.git
+git clone https://github.com/nsozturk/anna-dl.git
 cd anna-dl
 
 # Install dependencies
@@ -83,8 +84,11 @@ playwright install chromium
 ### 1. Download a Single Book (`get`)
 
 ```bash
-# Basic retrieval by title and author
+# Default: High-quality complete PDF format
 anna-dl get --title "Atomic Habits" --author "James Clear"
+
+# Prefer reflowable EPUB format for e-readers (Kobo, Kindle)
+anna-dl get --title "Atomic Habits" --author "James Clear" --format epub
 
 # Custom search query override
 anna-dl get --title "Thinking, Fast and Slow" --query "Kahneman Thinking Fast"

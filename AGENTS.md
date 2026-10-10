@@ -12,7 +12,8 @@ This document defines the operational contracts, execution commands, and failure
 
 | Task | Command | Failure Fallback |
 |---|---|---|
-| **Download Book by Title & Author** | `anna-dl get --title "<Title>" --author "<Author>"` | Add `--bypass-dns` if connection hangs or times out. |
+| **Download Book (PDF Default)** | `anna-dl get --title "<Title>" --author "<Author>"` | Add `--bypass-dns` if connection hangs or times out. |
+| **Download Book (EPUB Priority)** | `anna-dl get --title "<Title>" --author "<Author>" --format epub` | Use for e-readers (Kobo, Kindle) with reflowable layout. |
 | **Download Book with Specific Query** | `anna-dl get --title "<Title>" --query "<Keyword Query>"` | Shorten query to `Author Last Name + 2 Keywords`. |
 | **Download with DNS Bypass** | `anna-dl get --title "<Title>" --author "<Author>" --bypass-dns` | Direct edge IP resolution for ISP-blocked hosts. |
 | **Batch Download from Queue** | `anna-dl download --parallel --workers 4` | Run `anna-dl retry --bypass-dns` for remaining items. |

@@ -11,7 +11,8 @@
 When asked to find, retrieve, download, or read academic books, textbooks, or non-fiction literature:
 
 1. **CLI Availability:**
-   - Command: `anna-dl get --title "<Book Title>" --author "<Author Name>"`
+   - Command (PDF default): `anna-dl get --title "<Book Title>" --author "<Author Name>"`
+   - Command (EPUB for e-readers): `anna-dl get --title "<Book Title>" --author "<Author Name>" --format epub`
    - If not in system PATH, run as: `python3 -m anna_dl get --title "<Book Title>" --author "<Author Name>"`
 
 2. **Network Resilience & ISP Block Bypass:**
