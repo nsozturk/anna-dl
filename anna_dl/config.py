@@ -12,13 +12,15 @@ ANNA_MIRRORS: List[str] = [
 
 LIBGEN_MIRRORS: List[str] = [
     'libgen.la',
-    'libgen.gl',
-    'libgen.vg',
-    'libgen.is',
-    'libgen.rs'
+    'libgen.gl'
 ]
 
-LIBGEN_SEARCH: str = 'http://libgen.li'
+LIBGEN_SEARCH_MIRRORS: List[str] = [
+    'libgen.la',
+    'libgen.gl'
+]
+
+LIBGEN_SEARCH: str = 'http://libgen.la'
 DEFAULT_OUTPUT_DIR: str = './downloads'
 DEFAULT_QUEUE_FILE: str = './books_queue.json'
 DEFAULT_LOG_FILE: str = './download_log.json'

@@ -1,5 +1,6 @@
 import os
 import requests
+import subprocess
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -11,34 +12,74 @@ from anna_dl.config import HEADERS, LIBGEN_MIRRORS, MIN_FILE_SIZE, ANNA_MIRRORS
 
 def download_file(url: str, referer: str, dest_path: Path, min_size: int = MIN_FILE_SIZE) -> bool:
     """
-    Streams file from URL to disk, enforcing minimum file size validation to avoid corrupted error pages.
+    Streaming download with auto-resume via curl and fallback to requests,
+    including file size and magic byte validation.
     """
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path = dest_path.with_suffix(f"{dest_path.suffix}.tmp")
+    if temp_path.exists() and temp_path.stat().st_size < min_size:
+        temp_path.unlink(missing_ok=True)
+
+    # 1. Try curl with auto-resume and HTTP/1.1
+    try:
+        cmd = [
+            'curl', '-C', '-', '--http1.1', '-sSL',
+            '-H', 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            '--connect-timeout', '10',
+            '--max-time', '60',
+            '-e', referer or '',
+            url,
+            '-o', str(temp_path)
+        ]
+        for attempt in range(2):
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if temp_path.exists():
+                if temp_path.stat().st_size < min_size:
+                    temp_path.unlink(missing_ok=True)
+                    break
+                with open(temp_path, 'rb') as f:
+                    magic = f.read(10)
+                if magic.startswith(b'<!DOC') or magic.startswith(b'<html'):
+                    temp_path.unlink(missing_ok=True)
+                    break
+                temp_path.replace(dest_path)
+                return True
+            else:
+                break
+    except Exception:
+        if temp_path.exists() and temp_path.stat().st_size < min_size:
+            temp_path.unlink(missing_ok=True)
+
+    # 2. Fallback to requests stream
     headers = HEADERS.copy()
     if referer:
         headers['Referer'] = referer
 
     try:
-        dest_path.parent.mkdir(parents=True, exist_ok=True)
-        with requests.get(url, headers=headers, stream=True, timeout=30) as r:
+        with requests.get(url, headers=headers, stream=True, timeout=45) as r:
             r.raise_for_status()
-            with open(dest_path, 'wb') as f:
+            with open(temp_path, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=65536):
                     if chunk:
                         f.write(chunk)
 
-        if dest_path.exists() and os.path.getsize(dest_path) >= min_size:
+        if temp_path.exists():
+            if temp_path.stat().st_size < min_size:
+                temp_path.unlink(missing_ok=True)
+                return False
+            with open(temp_path, 'rb') as f:
+                magic = f.read(10)
+            if magic.startswith(b'<!DOC') or magic.startswith(b'<html'):
+                temp_path.unlink(missing_ok=True)
+                return False
+            temp_path.replace(dest_path)
             return True
-        else:
-            if dest_path.exists():
-                os.remove(dest_path)
-            return False
     except Exception:
-        if dest_path.exists():
-            try:
-                os.remove(dest_path)
-            except OSError:
-                pass
+        if temp_path.exists():
+            temp_path.unlink(missing_ok=True)
         return False
+
+    return False
 
 def download_book(
     book: Dict[str, Any],
@@ -77,8 +118,20 @@ def download_book(
 
                     print(f"    [+] Probing candidate #{idx} ({md5[:8]}...) -> {ext.upper()} stream...")
                     if download_file(url, referer or '', dest_path):
+                        # Detect true format from magic bytes
+                        with open(dest_path, 'rb') as fp:
+                            magic = fp.read(4)
+                        if magic == b'PK\x03\x04' and dest_path.suffix != '.epub':
+                            new_path = dest_path.with_suffix('.epub')
+                            dest_path.rename(new_path)
+                            dest_path = new_path
+                        elif magic.startswith(b'%PDF') and dest_path.suffix != '.pdf':
+                            new_path = dest_path.with_suffix('.pdf')
+                            dest_path.rename(new_path)
+                            dest_path = new_path
+
                         size_mb = round(dest_path.stat().st_size / (1024 * 1024), 2)
-                        print(f"    [✔] SUCCESS ({size_mb} MB) -> {dest_path}")
+                        print(f"    [✔] SUCCESS ({size_mb} MB) -> {dest_path}", flush=True)
                         if log_data is not None and log_file is not None:
                             item_key = f"{title} - {author}"
                             log_data[item_key] = {
@@ -89,7 +142,7 @@ def download_book(
                             save_json(log_file, log_data)
                         return True
 
-    print(f"    [-] Exhausted all candidates for '{title}'.")
+    print(f"    [-] Exhausted all candidates for '{title}'.", flush=True)
     if log_data is not None and log_file is not None:
         item_key = f"{title} - {author}"
         log_data[item_key] = {'status': 'FAILED'}
@@ -149,9 +202,31 @@ def download_parallel(
         item_key = f"{book.get('title', '')} - {book.get('author', '')}"
         if log_data.get(item_key, {}).get('status') == 'SUCCESS':
             continue
+
+        # Check if already present on disk in any valid extension
+        title = book.get('title', '')
+        author = book.get('author', '')
+        subcat = str(book.get('subcategory', ''))
+        already_on_disk = False
+        for ext in ('pdf', 'epub', 'mobi', 'azw3'):
+            fn = sanitize_filename(f"{title} - {author}.{ext}")
+            if group and subcat:
+                p = output_dir / sanitize_filename(group) / sanitize_filename(subcat) / fn
+            elif group:
+                p = output_dir / sanitize_filename(group) / fn
+            else:
+                p = output_dir / fn
+            if p.exists() and p.stat().st_size > 10000:
+                already_on_disk = True
+                log_data[item_key] = {'status': 'SUCCESS', 'path': str(p), 'bytes': p.stat().st_size}
+                break
+        if already_on_disk:
+            continue
+
         books_to_download.append(book)
 
-    print(f"🚀 Starting parallel download for {len(books_to_download)} book(s) across {max_workers} worker(s)...")
+    save_json(log_file, log_data)
+    print(f"🚀 Starting parallel download for {len(books_to_download)} book(s) across {max_workers} worker(s)...", flush=True)
 
     def worker(book):
         title = book.get('title', 'Unknown')
@@ -175,8 +250,20 @@ def download_parallel(
                         dest_path = output_dir / filename
 
                     if download_file(url, referer or '', dest_path):
+                        # Detect true format from magic bytes
+                        with open(dest_path, 'rb') as fp:
+                            magic = fp.read(4)
+                        if magic == b'PK\x03\x04' and dest_path.suffix != '.epub':
+                            new_path = dest_path.with_suffix('.epub')
+                            dest_path.rename(new_path)
+                            dest_path = new_path
+                        elif magic.startswith(b'%PDF') and dest_path.suffix != '.pdf':
+                            new_path = dest_path.with_suffix('.pdf')
+                            dest_path.rename(new_path)
+                            dest_path = new_path
+
                         size_mb = round(dest_path.stat().st_size / (1024 * 1024), 2)
-                        print(f"  [✔] SUCCESS ({size_mb} MB) -> {dest_path.name}")
+                        print(f"  [✔] SUCCESS ({size_mb} MB) -> {dest_path.name}", flush=True)
                         with lock:
                             log_data[item_key] = {
                                 'status': 'SUCCESS',
@@ -185,6 +272,7 @@ def download_parallel(
                             }
                             save_json(log_file, log_data)
                         return True
+        print(f"  [✖] FAILED -> {item_key}", flush=True)
         with lock:
             log_data[item_key] = {'status': 'FAILED'}
             save_json(log_file, log_data)

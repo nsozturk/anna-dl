@@ -27,8 +27,10 @@ def build_queries(title: str, author: str = '', search_query: str = '') -> List[
     1. Explicit custom search query (if supplied)
     2. Full cleaned title + primary author
     3. Short title (pre-colon/dash) + author last name
-    4. Niche high-value keywords + author last name
-    5. Short title alone
+    4. Short title alone
+    5. Cleaned full title alone (if different from short title)
+    6. Author last name + top keywords
+    7. Niche keywords alone
     """
     queries = []
     if search_query:
@@ -47,15 +49,23 @@ def build_queries(title: str, author: str = '', search_query: str = '') -> List[
     short_title = re.split(r'[:\-—]', clean_title)[0].strip()
     if last_name:
         queries.append(f"{short_title} {last_name}".strip())
+    if short_title:
+        queries.append(short_title)
+    if clean_title and clean_title != short_title:
+        queries.append(clean_title)
 
-    stopwords = {'with', 'from', 'this', 'that', 'then', 'than', 'into', 'upon', 'over', 'some', 'such', 'about', 'guide'}
+    stopwords = {'with', 'from', 'this', 'that', 'then', 'than', 'into', 'upon', 'over', 'some', 'such', 'about', 'guide', 'the', 'a', 'an', 'and', 'of', 'in', 'on', 'for', 'to', 'how'}
+    sig_words = [w for w in re.findall(r'\b[a-zA-Z]{3,}\b', clean_title) if w.lower() not in stopwords]
+    if sig_words:
+        if last_name:
+            queries.append(f"{last_name} {' '.join(sig_words[:2])}".strip())
+            queries.append(f"{last_name} {' '.join(sig_words[:3])}".strip())
+        queries.append(f"{' '.join(sig_words[:2])}".strip())
+
     words = [w for w in re.findall(r'\b\w{4,}\b', clean_title.lower()) if w not in stopwords]
     niche_keywords = " ".join(words[:4])
     if niche_keywords and last_name:
         queries.append(f"{niche_keywords} {last_name}".strip())
-
-    if short_title:
-        queries.append(short_title)
 
     deduped = []
     for q in queries:

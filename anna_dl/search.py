@@ -4,7 +4,7 @@ import urllib.parse
 import requests
 from typing import List, Tuple, Optional
 from bs4 import BeautifulSoup
-from anna_dl.config import LIBGEN_SEARCH
+from anna_dl.config import LIBGEN_SEARCH, LIBGEN_SEARCH_MIRRORS
 
 def get_working_mirror(mirrors: List[str], headers: dict) -> str:
     """
@@ -73,83 +73,153 @@ def _search_anna_playwright_stealth(query: str, anna_mirror: str) -> List[str]:
 
     return md5_list
 
-def search_md5_candidates(query: str, anna_mirror: str, max_candidates: int = 10) -> List[str]:
+def search_md5_candidates(query: str, anna_mirror: str, max_candidates: int = 15) -> List[str]:
     """
-    Discovers candidate MD5 hashes across LibGen and Anna's Archive endpoints.
+    Searches for MD5 hashes across LibGen search mirrors and Anna's Archive with smart ranking.
     Employs fast requests with automatic stealth browser fallback for DDoS-Guard challenges.
     """
-    md5_list = []
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'}
+    candidates = []
+    seen = set()
 
-    # 1. Primary fast index check: Libgen.li
-    try:
-        resp = requests.get(
-            f"{LIBGEN_SEARCH}/index.php",
-            params={'req': query},
-            headers=headers,
-            timeout=10
-        )
-        if resp.status_code == 200:
-            md5_list.extend(re.findall(r'md5=([a-fA-F0-9]{32})', resp.text, re.IGNORECASE))
-    except requests.RequestException:
-        pass
+    search_hosts = list(LIBGEN_SEARCH_MIRRORS)
+    if LIBGEN_SEARCH and LIBGEN_SEARCH.replace('http://', '').replace('https://', '') not in search_hosts:
+        search_hosts.insert(0, LIBGEN_SEARCH.replace('http://', '').replace('https://', ''))
 
-    # 2. Secondary comprehensive mirror check: Anna's Archive
-    hit_ddos_guard = False
-    if len(md5_list) < max_candidates and anna_mirror:
+    for host in search_hosts:
         try:
-            resp = requests.get(
-                f"https://{anna_mirror}/search",
-                params={'q': query},
-                headers=headers,
-                timeout=10
-            )
+            url = f"http://{host}/index.php"
+            resp = requests.get(url, params={'req': query}, headers=headers, timeout=8)
+            if resp.status_code == 200 and resp.text:
+                soup = BeautifulSoup(resp.text, 'html.parser')
+                table = soup.find('table', {'id': 'tablelibgen'}) or soup.find('table')
+                if table:
+                    rows = table.find_all('tr')[1:]
+                    for r in rows:
+                        cols = r.find_all(['td', 'th'])
+                        if len(cols) < 8:
+                            continue
+                        link = r.find('a', href=re.compile(r'md5=', re.I))
+                        if not link:
+                            continue
+                        m = re.search(r'md5=([a-fA-F0-9]{32})', link['href'], re.I)
+                        if not m:
+                            continue
+                        md5 = m.group(1).lower()
+                        if md5 in seen:
+                            continue
+                        seen.add(md5)
+
+                        pages = cols[5].get_text(strip=True)
+                        size_str = cols[6].get_text(strip=True).lower()
+                        ext = cols[7].get_text(strip=True).lower()
+
+                        size_kb = 0.0
+                        if 'mb' in size_str:
+                            size_kb = float(re.sub(r'[^0-9.]', '', size_str) or 0) * 1024
+                        elif 'kb' in size_str:
+                            size_kb = float(re.sub(r'[^0-9.]', '', size_str) or 0)
+
+                        is_flyer = (ext == 'pdf' and size_kb < 150 and pages in ('1', '2', '3', '4'))
+                        # Rank: real books first (is_flyer=False), larger files/epubs preferred
+                        score = 10 if is_flyer else 0
+                        if ext in ('epub', 'pdf'):
+                            score -= 2
+                        candidates.append((score, -size_kb, md5))
+
+                if candidates:
+                    break
+        except requests.RequestException:
+            continue
+
+    if not candidates:
+        # Fallback raw regex across hosts
+        for host in search_hosts:
+            try:
+                resp = requests.get(f"http://{host}/index.php", params={'req': query}, headers=headers, timeout=6)
+                if resp.status_code == 200:
+                    raw_md5s = re.findall(r'md5=([a-fA-F0-9]{32})', resp.text, re.I)
+                    for m in raw_md5s:
+                        m_low = m.lower()
+                        if m_low not in seen:
+                            seen.add(m_low)
+                            candidates.append((0, 0, m_low))
+                if candidates:
+                    break
+            except requests.RequestException:
+                pass
+
+    hit_ddos_guard = False
+    if anna_mirror and len(candidates) < max_candidates:
+        try:
+            resp = requests.get(f"https://{anna_mirror}/search", params={'q': query}, headers=headers, timeout=6)
             if resp.status_code == 200:
-                md5_list.extend(re.findall(r'md5/([a-fA-F0-9]{32})', resp.text, re.IGNORECASE))
+                raw_md5s = re.findall(r'md5/([a-fA-F0-9]{32})', resp.text, re.I)
+                for m in raw_md5s:
+                    m_low = m.lower()
+                    if m_low not in seen:
+                        seen.add(m_low)
+                        candidates.append((1, 0, m_low))
             elif resp.status_code == 403 or "ddos-guard" in resp.text.lower():
                 hit_ddos_guard = True
         except requests.RequestException:
             hit_ddos_guard = True
 
-    # 3. Stealth Playwright fallback if direct HTTP is blocked by DDoS-Guard
-    if hit_ddos_guard and len(md5_list) < max_candidates and anna_mirror:
+    # Stealth Playwright fallback if direct HTTP is blocked by DDoS-Guard
+    if hit_ddos_guard and len(candidates) < max_candidates and anna_mirror:
         print(f"      [*] Anna mirror returned DDoS challenge. Activating stealth browser fallback...")
         pw_md5s = _search_anna_playwright_stealth(query, anna_mirror)
-        md5_list.extend(pw_md5s)
+        for m in pw_md5s:
+            m_low = m.lower()
+            if m_low not in seen:
+                seen.add(m_low)
+                candidates.append((2, 0, m_low))
 
-    # Deduplicate while preserving rank order
-    unique = []
-    for md5 in md5_list:
-        md5_lower = md5.lower()
-        if md5_lower not in unique:
-            unique.append(md5_lower)
-            if len(unique) >= max_candidates:
-                break
-    return unique
+    candidates.sort(key=lambda x: (x[0], x[1]))
+    return [c[2] for c in candidates][:max_candidates]
 
 def get_direct_download_url(md5: str, libgen_mirrors: List[str]) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
-    Resolves an MD5 hash into a direct streaming link via ads.php -> get.php token extraction.
-    Returns: (download_url, file_extension, referer_url)
+    Fetches the download URL and format extension for an MD5 hash from libgen mirrors.
+    Validates candidates via pre-flight HEAD checks before streaming.
     """
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'}
     for mirror in libgen_mirrors:
         try:
             url = f"http://{mirror}/ads.php?md5={md5}"
-            resp = requests.get(url, headers=headers, timeout=10)
+            resp = requests.get(url, headers=headers, timeout=8)
             if resp.status_code == 200:
-                # Direct get.php token link extraction
+                ext = "pdf"
+                # Check for extension indicators in HTML
+                m_ext = re.search(r'Extension:\s*([a-zA-Z0-9]+)', resp.text, re.I)
+                if m_ext:
+                    ext = m_ext.group(1).lower()
+                else:
+                    m_file = re.search(r'href="[^"]+\.([a-zA-Z0-9]{3,4})"', resp.text, re.I)
+                    if m_file and m_file.group(1).lower() in ('epub', 'pdf', 'mobi', 'azw3', 'djvu'):
+                        ext = m_file.group(1).lower()
+
                 match = re.search(r'href="(get\.php\?md5=[^"]+)"', resp.text)
                 if match:
-                    return f"http://{mirror}/{match.group(1)}", "pdf", url
+                    dl_candidate = f"http://{mirror}/{match.group(1)}"
+                    try:
+                        chk = requests.head(dl_candidate, headers={'User-Agent': headers['User-Agent'], 'Referer': url}, allow_redirects=True, timeout=5)
+                        if chk.status_code == 200 and int(chk.headers.get('Content-Length', 0)) > 10000:
+                            return dl_candidate, ext, url
+                    except Exception:
+                        pass
 
-                # Fallback to explicit direct file links (.pdf / .epub)
-                match = re.search(r'href="([^"]+\.(pdf|epub))"', resp.text, re.IGNORECASE)
+                match = re.search(r'href="([^"]+\.(pdf|epub|mobi))"', resp.text, re.IGNORECASE)
                 if match:
                     link = match.group(1)
                     if not link.startswith('http'):
                         link = f"http://{mirror}/{link}"
-                    return link, match.group(2).lower(), url
+                    try:
+                        chk = requests.head(link, headers={'User-Agent': headers['User-Agent'], 'Referer': url}, allow_redirects=True, timeout=5)
+                        if chk.status_code == 200 and int(chk.headers.get('Content-Length', 0)) > 10000:
+                            return link, match.group(2).lower(), url
+                    except Exception:
+                        pass
         except requests.RequestException:
             continue
     return None, None, None
