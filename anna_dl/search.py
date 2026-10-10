@@ -121,10 +121,17 @@ def search_md5_candidates(query: str, anna_mirror: str, max_candidates: int = 15
                             size_kb = float(re.sub(r'[^0-9.]', '', size_str) or 0)
 
                         is_flyer = (ext == 'pdf' and size_kb < 150 and pages in ('1', '2', '3', '4'))
-                        # Rank: real books first (is_flyer=False), larger files/epubs preferred
-                        score = 10 if is_flyer else 0
-                        if ext in ('epub', 'pdf'):
-                            score -= 2
+                        # Rank: EPUB/KEPUB (-100) > MOBI/AZW3 (-50) > PDF (0) > Flyers (200)
+                        if is_flyer:
+                            score = 200
+                        elif ext in ('epub', 'kepub'):
+                            score = -100
+                        elif ext in ('mobi', 'azw3'):
+                            score = -50
+                        elif ext == 'pdf':
+                            score = 0
+                        else:
+                            score = 50
                         candidates.append((score, -size_kb, md5))
 
                 if candidates:
