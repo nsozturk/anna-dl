@@ -33,6 +33,7 @@
 * 🔍 **Smart Title Sanitizer**: Automatically cleans editions (`(2nd ed.)`), annotations, and subtitles, creating progressive 4-tier fallback queries.
 * 🌐 **Built-in DNS Bypass**: Monkey-patches socket resolution directly to edge IP (`104.21.34.70`) to circumvent regional ISP blocks.
 * 📖 **Dual Format Engine (PDF Default + Opt-in EPUB)**: Prioritizes full-fidelity complete PDF editions by default while demoting incomplete pamphlets/flyers (< 150 KB). Includes native `--format epub` support for e-readers (Kobo, Kindle) with automatic magic-byte format validation.
+* 📄 **Dual Agent Toolkit (`bookdl` & `paperdl`)**: Full support for both books/monographs and academic research papers (preprints, journals, working papers) across arXiv, SSRN, Unpaywall, OpenAlex, MDPI, and Anna's Archive with automated Cloudflare/bot challenge bypass.
 * 🤖 **First-Class AI Agent Interoperability**: Built from the ground up with explicit [AGENTS.md](AGENTS.md) contracts and exit codes for Claude Code, Gemini CLI, Cursor, Antigravity, OpenCode, and Codex.
 
 ---
@@ -134,6 +135,33 @@ anna-dl sync
 anna-dl status
 ```
 
+### 5. Academic Research Papers & Preprints (`paperdl`)
+
+Retrieve academic papers and preprints across arXiv, SSRN, Open Access repositories, and Anna's Archive with automated anti-bot bypass:
+
+```bash
+# Download by arXiv ID (Open Access)
+paperdl get --arxiv 2306.13661 --dest ./papers/2306.13661.pdf
+
+# Download by SSRN Abstract ID (with automatic Chrome bypass if blocked)
+paperdl get --ssrn 4857230 --dest ./papers/ssrn_4857230.pdf
+
+# Download by DOI (queries Unpaywall + open university repositories)
+paperdl get --doi 10.1016/j.frl.2023.103809 --dest ./papers/paper.pdf
+
+# Download by Direct URL (MDPI, NBER, etc.)
+paperdl get --url "https://www.mdpi.com/1911-8074/18/4/201/pdf" --dest ./papers/paper.pdf
+
+# Download by Paper Title (fuzzy multi-source search)
+paperdl get --title "Factor Momentum" --dest ./papers/factor_momentum.pdf
+
+# Force Google Chrome native bypass for Cloudflare Turnstile protected sites
+paperdl get --ssrn 5209907 --chrome --dest ./papers/crypto_trends.pdf
+
+# Batch download entire research catalog from Markdown file
+paperdl md ./research_papers.md --output-dir ./papers/ --workers 4
+```
+
 ---
 
 ## 🤖 AI Agent Integration
@@ -155,6 +183,11 @@ Copy `GLOBAL_AGENT_RULE.md` into your AI environment (`~/.claude/agents/anna-dl.
 ---
 
 ## 🏷️ Release History
+
+### **v1.1.0**
+- 📄 **Academic Research Paper Engine (`paperdl`)**: Integrated multi-tiered research paper retrieval for arXiv, SSRN, DOI, and open access repositories (Unpaywall, OpenAlex).
+- 🛡️ **Native Google Chrome Anti-Bot Driver**: macOS AppleScript automation bypassing Cloudflare Turnstile, DDoS-Guard, and Akamai challenges with 100% human-grade trust score.
+- ⚡ **Unified CLI Console Scripts**: Direct access to `paperdl` alongside `anna-dl` and `bookdl`.
 
 ### **v1.0.0 (Initial Stable Release)**
 - ✨ **Zero-Key Architecture:** Complete multi-mirror search without requiring paid API keys.

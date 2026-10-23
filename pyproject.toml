@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "anna-dl"
-version = "1.0.0"
-description = "Lightweight, resilient Shadow Library downloader CLI & AI Agent (Anna's Archive & LibGen) with zero paid API keys."
+version = "1.1.0"
+description = "Lightweight, resilient Shadow Library & Academic Paper downloader CLI & AI Agent (Anna's Archive, LibGen, arXiv, SSRN, OpenAlex) with zero paid API keys."
 readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
@@ -36,7 +36,8 @@ dependencies = [
 [project.scripts]
 anna-dl = "anna_dl.cli:main"
 bookdl = "anna_dl.cli:main"
+paperdl = "paperdl.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["anna_dl*"]
+include = ["anna_dl*", "paperdl*"]
